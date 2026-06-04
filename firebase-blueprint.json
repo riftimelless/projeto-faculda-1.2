@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User preferences and saved items for GuiaEstudantil",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The unique user identifier matching Firebase Auth UID"
+        },
+        "name": {
+          "type": "string",
+          "description": "User's preferred display name"
+        },
+        "email": {
+          "type": "string",
+          "description": "User's electronic mail address"
+        },
+        "schoolState": {
+          "type": "string",
+          "description": "Current school enrollment situation of the student"
+        },
+        "selectedInterest": {
+          "type": "string",
+          "description": "Preferred field of study or professional career segment"
+        },
+        "instPref": {
+          "type": "string",
+          "description": "Preference for administrative nature of universities (public, private)"
+        },
+        "modPref": {
+          "type": "string",
+          "description": "Preferred study modality (presencial, EAD, semi)"
+        },
+        "savedInstitutions": {
+          "type": "array",
+          "description": "List of saved/bookmarked institution IDs"
+        },
+        "savedDeadlines": {
+          "type": "array",
+          "description": "List of saved/bookmarked deadline/calendar IDs"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when this profile record was initialized"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when this profile record was last modified"
+        }
+      },
+      "required": ["userId", "email", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Primary user profiles containing study preferences and bookmarked items"
+    }
+  }
+}

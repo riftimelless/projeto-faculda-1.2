@@ -1,0 +1,6 @@
+{
+  "name": "Guia Estudantil Curitiba",
+  "description": "Portal unificado para estudantes de Curitiba e região metropolitana com editais, instituições, prazos e assistente de orientação profissional por IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

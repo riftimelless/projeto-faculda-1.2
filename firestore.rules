@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Implicit Default-Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Standard Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Blueprint for User Profiles
+    function isValidUser(data) {
+      return data.keys().hasAll(['userId', 'email', 'createdAt'])
+        && data.keys().size() <= 11
+        && data.userId == request.auth.uid
+        && data.email is string
+        && data.email.size() <= 150
+        && (data.get('name', '') is string && data.get('name', '').size() <= 100)
+        && (data.get('schoolState', '') is string && data.get('schoolState', '').size() <= 100)
+        && (data.get('selectedInterest', '') is string && data.get('selectedInterest', '').size() <= 150)
+        && (data.get('instPref', '') is string && data.get('instPref', '').size() <= 150)
+        && (data.get('modPref', '') is string && data.get('modPref', '').size() <= 50)
+        && (!data.keys().contains('savedInstitutions') || (data.savedInstitutions is list && data.savedInstitutions.size() <= 100))
+        && (!data.keys().contains('savedDeadlines') || (data.savedDeadlines is list && data.savedDeadlines.size() <= 100))
+        && (data.keys().contains('savedInstitutions') && data.savedInstitutions.size() > 0 ? data.savedInstitutions[0] is string : true)
+        && (data.keys().contains('savedDeadlines') && data.savedDeadlines.size() > 0 ? data.savedDeadlines[0] is string : true);
+    }
+
+    // 2. User Profile Match Block
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      
+      allow create: if isOwner(userId)
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && incoming().createdAt == request.time;
+        
+      allow update: if isOwner(userId)
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && incoming().updatedAt == request.time
+        && incoming().createdAt == existing().createdAt
+        && incoming().email == existing().email;
+        
+      allow delete: if false; // Profiles are permanent inside the portal scope
+    }
+  }
+}
